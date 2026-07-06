@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import pg from "pg";
 
-// 1. IMPORTAR LAS RUTAS (Creamos este archivo en el siguiente paso)
+
 import productosRouter from "./routes/productos.js"; 
 import categoriasRouter from "./routes/categorias.js";
 import dashboardRouter from "./routes/dashboard.js";
@@ -33,15 +33,14 @@ db.connect()
     process.exit(1);
   });
 
-// 2. ENLAZAR LAS RUTAS
-// Le decimos a Express: "Si la URL empieza con /api/productos, maneja todo en productos.js"
+
 app.use("/api/productos", productosRouter);
 app.use ("/api/categorias", categoriasRouter);
 app.use ("/api/dashboard", dashboardRouter );
 app.use ("/api/movimientos", movimientosRouter);
 
 app.get("/", (req, res) => {
-    res.sendFile("index.html", { root: "public" }); // Corregido: es res.sendFile, no app.sendFile
+    res.sendFile("index.html", { root: "public" }); 
 });
 
 app.listen(port, () => {
