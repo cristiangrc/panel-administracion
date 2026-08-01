@@ -1,44 +1,34 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Movimientos() {
-  // ============================================
-  // ESTADOS
-  // ============================================
-  const [movimientos, setMovimientos] = useState([]);   // Historial de movimientos
-  const [productos, setProductos] = useState([]);       // Productos para el <select>
-  const [formData, setFormData] = useState({             // Formulario de nuevo movimiento
+export default function Movimientos({ token }) {
+  
+  const [movimientos, setMovimientos] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [formData, setFormData] = useState({
     producto_id: '',
     tipo: 'ENTRADA',
     cantidad: '',
     motivo: ''
   });
-  const [mensaje, setMensaje] = useState('');            // Mensaje de feedback al usuario
+  const [mensaje, setMensaje] = useState('');
 
-  // ============================================
-  // EFECTOS: Carga inicial
-  // ============================================
+  const authHeaders = { 'Authorization': `Bearer ${token}` };
+
   useEffect(() => {
     obtenerMovimientos();
     obtenerProductos();
   }, []);
 
-  // ============================================
-  // PETICIONES A LA API
-  // ============================================
-
-  /** Obtiene todos los movimientos desde /api/movimientos */
   const obtenerMovimientos = async () => {
     try {
-      const res = await fetch('/api/movimientos');
+      const res = await fetch('/api/movimientos', { headers: authHeaders });
       const data = await res.json();
       
-      // Si el backend falla (Error 500), 'data' puede no ser un array.
-      // Solo guardamos en el estado si la respuesta es una lista válida.
       if (res.ok && Array.isArray(data)) {
         setMovimientos(data);
       } else {
         console.error('El backend no devolvió un array de movimientos:', data);
-        setMovimientos([]); // Mantenemos un array vacío seguro
+        setMovimientos([]); 
       }
     } catch (error) {
       console.error('Error al obtener movimientos:', error);
@@ -46,10 +36,9 @@ export default function Movimientos() {
     }
   };
 
-  /** Obtiene productos para llenar el <select> del formulario */
   const obtenerProductos = async () => {
     try {
-      const res = await fetch('/api/productos');
+      const res = await fetch('/api/productos', { headers: authHeaders });
       const data = await res.json();
       
       if (res.ok && Array.isArray(data)) {
@@ -64,7 +53,6 @@ export default function Movimientos() {
     }
   };
 
-  /** Envía el formulario para registrar un nuevo movimiento (POST) */
   const registrarMovimiento = async (e) => {
     e.preventDefault();
     setMensaje('');
@@ -72,7 +60,7 @@ export default function Movimientos() {
     try {
       const res = await fetch('/api/movimientos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           ...formData,
           cantidad: parseInt(formData.cantidad)
@@ -86,27 +74,20 @@ export default function Movimientos() {
         return;
       }
 
-      // Feedback de éxito y recarga de datos
       setMensaje(`Movimiento registrado con éxito.`);
       setFormData({ producto_id: '', tipo: 'ENTRADA', cantidad: '', motivo: '' });
       obtenerMovimientos();
-      obtenerProductos(); // Para actualizar el stock visible en el select
+      obtenerProductos();
     } catch (error) {
       console.error('Error al registrar movimiento:', error);
       setMensaje('Error de conexión con el servidor.');
     }
   };
 
-  /** Actualiza el campo correspondiente del formulario */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ============================================
-  // UTILIDADES
-  // ============================================
-
-  /** Formatea una fecha ISO a locale argentino */
   const formatearFecha = (iso) => {
     if (!iso) return '—';
     try {
@@ -122,14 +103,10 @@ export default function Movimientos() {
     }
   };
 
-  // ============================================
-  // RENDERIZADO
-  // ============================================
   return (
     <div className="page">
       <h1 className="page-title">Movimientos de Inventario</h1>
 
-      {/* SECCIÓN: Formulario para registrar movimiento */}
       <section className="card form-card">
         <h2>Registrar Movimiento</h2>
         <form onSubmit={registrarMovimiento}>
@@ -180,7 +157,6 @@ export default function Movimientos() {
           </div>
         </form>
 
-        {/* Mensaje de feedback */}
         {mensaje && (
           <p className={`feedback ${mensaje.startsWith('Error') ? 'feedback-error' : 'feedback-success'}`}>
             {mensaje}
@@ -188,7 +164,6 @@ export default function Movimientos() {
         )}
       </section>
 
-      {/* SECCIÓN: Historial de movimientos */}
       <section className="card">
         <h2>Historial de Movimientos</h2>
         <div className="table-container">

@@ -1,6 +1,6 @@
 import React from 'react';
 
- function Sidebar({ setVista, vistaActual }) {
+ function Sidebar({ setVista, vistaActual, usuario, onLogout }) {
   const botones = [
     { id: 'dashboard', label: '📊 Dashboard' },
     { id: 'productos', label: '📦 Inventario' },
@@ -15,13 +15,18 @@ import React from 'react';
           <button
             key={b.id}
             onClick={() => setVista(b.id)}
-            // Si el botón es el activo, le añade la clase 'active' para que le des un estilo diferente en CSS
             className={`sidebar-btn ${vistaActual === b.id ? 'active' : ''}`}
           >
             {b.label}
           </button>
         ))}
       </nav>
+      <div className="sidebar-footer">
+        {usuario && <p className="sidebar-user">{usuario.nombre}</p>}
+        <button className="sidebar-btn sidebar-logout" onClick={onLogout}>
+         Cerrar Sesión
+        </button>
+      </div>
     </aside>
   );
 }

@@ -8,6 +8,8 @@ import productosRouter from "./routes/productos.js";
 import categoriasRouter from "./routes/categorias.js";
 import dashboardRouter from "./routes/dashboard.js";
 import movimientosRouter from "./routes/movimientos.js";
+import loginRouter from "./routes/Login.js"
+import recuperacionRouter from "./routes/recuperacion.js"
 
 dotenv.config();
 const app = express();
@@ -38,6 +40,10 @@ app.use("/api/productos", productosRouter);
 app.use ("/api/categorias", categoriasRouter);
 app.use ("/api/dashboard", dashboardRouter );
 app.use ("/api/movimientos", movimientosRouter);
+app.use ("/api/login",loginRouter);
+app.use ("/api/recuperacion", recuperacionRouter);
+
+
 
 app.get("/", (req, res) => {
     res.sendFile("index.html", { root: "public" }); 

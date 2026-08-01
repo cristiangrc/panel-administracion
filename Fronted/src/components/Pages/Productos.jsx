@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Productos() {
+export default function Productos({ token }) {
  
-  const [productos, setProductos] = useState([]);       // Lista completa de productos
-  const [categorias, setCategorias] = useState([]);     // Lista de categorías para el 
-  const [busqueda, setBusqueda] = useState('');          //  buscador
-  const [modalAbierto, setModalAbierto] = useState(false); // Controla visibilidad del modal
-  const [editando, setEditando] = useState(null);        // ID del producto 
-  const [formData, setFormData] = useState({             // Datos del formulario del modal
+  const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [editando, setEditando] = useState(null);
+  const [formData, setFormData] = useState({
     sku: '',
     nombre: '',
     descripcion: '',
@@ -17,16 +17,16 @@ export default function Productos() {
     categoria_id: ''
   });
 
- 
+  const authHeaders = { 'Authorization': `Bearer ${token}` };
+
   useEffect(() => {
     obtenerProductos();
     obtenerCategorias();
   }, []);
 
-  
   const obtenerProductos = async () => {
     try {
-      const res = await fetch('/api/productos');
+      const res = await fetch('/api/productos', { headers: authHeaders });
       const data = await res.json();
       setProductos(data);
     } catch (error) {
@@ -34,10 +34,9 @@ export default function Productos() {
     }
   };
 
-  /** Obtiene las categorías para llenar el <select> del modal */
   const obtenerCategorias = async () => {
     try {
-      const res = await fetch('/api/categorias');
+      const res = await fetch('/api/categorias', { headers: authHeaders });
       const data = await res.json();
       setCategorias(data);
     } catch (error) {
@@ -45,7 +44,6 @@ export default function Productos() {
     }
   };
 
-  /** Guarda (crea o actualiza) un producto dependiendo del modo */
   const guardarProducto = async (e) => {
     e.preventDefault();
 
@@ -59,42 +57,37 @@ export default function Productos() {
 
     try {
       if (editando) {
-       
         await fetch(`/api/productos/${editando}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(payload)
         });
       } else {
-        
         await fetch('/api/productos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify(payload)
         });
       }
 
       cerrarModal();
-      obtenerProductos(); // Refresca la tabla
+      obtenerProductos();
     } catch (error) {
       console.error('Error al guardar producto:', error);
     }
   };
 
-  /** Elimina un producto por ID con confirmación */
   const eliminarProducto = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
 
     try {
-      await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+      await fetch(`/api/productos/${id}`, { method: 'DELETE', headers: authHeaders });
       obtenerProductos();
     } catch (error) {
       console.error('Error al eliminar producto:', error);
     }
   };
 
-
-  /** Abre el modal en modo "crear" con el formulario vacío */
   const abrirModalCrear = () => {
     setEditando(null);
     setFormData({ sku: '', nombre: '', descripcion: '', precio: '', stock_actual: '', stock_minimo: '', categoria_id: '' });
@@ -115,18 +108,15 @@ export default function Productos() {
     setModalAbierto(true);
   };
 
-  /** Cierra el modal y limpia el estado */
   const cerrarModal = () => {
     setModalAbierto(false);
     setEditando(null);
   };
 
-  /** Actualiza el campo correspondiente del formulario */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  
   const productosFiltrados = productos.filter(p =>
     p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
     p.sku.toLowerCase().includes(busqueda.toLowerCase())
@@ -136,7 +126,6 @@ export default function Productos() {
     <div className="page">
       <h1 className="page-title">Gestión de Productos</h1>
 
-      {/* Barra de herramientas: buscador + botón crear */}
       <div className="toolbar">
         <input
           type="text"
@@ -150,7 +139,6 @@ export default function Productos() {
         </button>
       </div>
 
-      {/* Tabla de productos */}
       <div className="table-container">
         <table className="table">
           <thead>
@@ -189,7 +177,6 @@ export default function Productos() {
         </table>
       </div>
 
-      {/* MODAL: Crear / Editar producto */}
       {modalAbierto && (
         <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
