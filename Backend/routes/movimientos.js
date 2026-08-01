@@ -1,8 +1,11 @@
 import express, { Router } from "express";
 import { db } from "../index.js";
+import { verifyToken } from "./Login.js";
 
 
 const router = express.Router();
+
+router.use(verifyToken);
 
 
 router.get("/", async (req, res) =>{

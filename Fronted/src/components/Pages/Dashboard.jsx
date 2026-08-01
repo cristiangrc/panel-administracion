@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Dashboard() {
-  // Estado para los contadores de /resumen
+export default function Dashboard({ token }) {
   const [resumen, setResumen] = useState({ totalproductos: 0, totalcategorias: 0, stockbajo: 0, sinstock: 0 });
   const [productosBajos, setProductosBajos] = useState([]);
   const [productosRecientes, setProductosRecientes] = useState([]);
+
+  const authHeaders = { 'Authorization': `Bearer ${token}` };
 
   useEffect(() => {
     obtenerResumen();
@@ -14,7 +15,7 @@ export default function Dashboard() {
 
   const obtenerResumen = async () => {
     try {
-      const response = await fetch("/api/dashboard/resumen");
+      const response = await fetch("/api/dashboard/resumen", { headers: authHeaders });
       const data = await response.json();
       setResumen(data);
     } catch (error) {
@@ -24,7 +25,7 @@ export default function Dashboard() {
 
   const obtenerProductos = async () => {
     try {
-      const response = await fetch("/api/dashboard/productos-recientes");
+      const response = await fetch("/api/dashboard/productos-recientes", { headers: authHeaders });
       const data = await response.json();
       if (Array.isArray(data)) setProductosRecientes(data);
     } catch (error) {
@@ -34,7 +35,7 @@ export default function Dashboard() {
 
   const obtenerStock = async () => {
     try {
-      const response = await fetch("/api/dashboard/productos-stock-bajo");
+      const response = await fetch("/api/dashboard/productos-stock-bajo", { headers: authHeaders });
       const data = await response.json();
       if (Array.isArray(data)) setProductosBajos(data);
     } catch (error) {
@@ -46,7 +47,6 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <h1 className="page-title">Panel de Control</h1>
       
-      {/* Bloque de Tarjetas Informativas */}
       <div className="dashboard-grid">
         <div className="card">
           <h3>📦 Productos</h3>
@@ -66,10 +66,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Contenedor de las secciones inferiores */}
       <div className="dashboard-sections">
-        
-        {/* Tabla o lista de Alertas */}
         <div className="dashboard-alerts">
           <h2>Alertas de Stock Bajo</h2>
           {productosBajos.length === 0 ? (
@@ -85,7 +82,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Mapeo de Productos Recientes*/}
         <div className="dashboard-recents">
           <h2>Últimos Productos Agregados</h2>
           {productosRecientes.length === 0 ? (
@@ -100,7 +96,6 @@ export default function Dashboard() {
             </ul>
           )}
         </div>
-
       </div>
     </div>
   );
